@@ -21,7 +21,7 @@ TRAIN_DIR=/Users/barron/tmp/nerf_results/$EXPERIMENT/$SCENE
 DATA_DIR=/Users/barron/data/nerf_synthetic/$SCENE
 
 rm $TRAIN_DIR/*
-python -m train \
+python3 -m train \
   --data_dir=$DATA_DIR \
   --train_dir=$TRAIN_DIR \
   --gin_file=configs/blender.gin \

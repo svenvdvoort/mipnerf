@@ -20,7 +20,7 @@ EXPERIMENT=debug
 TRAIN_DIR=/Users/barron/tmp/nerf_results/$EXPERIMENT/$SCENE
 DATA_DIR=/Users/barron/data/down4/$SCENE
 
-python -m eval \
+python3 -m eval \
   --data_dir=$DATA_DIR \
   --train_dir=$TRAIN_DIR \
   --chunk=3076 \
