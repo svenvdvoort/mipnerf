@@ -29,9 +29,9 @@ from PIL import Image
 gin.add_config_file_search_path('../')
 
 
-gin.config.external_configurable(flax.nn.relu, module='flax.nn')
-gin.config.external_configurable(flax.nn.sigmoid, module='flax.nn')
-gin.config.external_configurable(flax.nn.softplus, module='flax.nn')
+gin.config.external_configurable(flax.linen.relu, module='flax.linen')
+gin.config.external_configurable(flax.linen.sigmoid, module='flax.linen')
+gin.config.external_configurable(flax.linen.softplus, module='flax.linen')
 
 
 @flax.struct.dataclass
