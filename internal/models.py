@@ -238,7 +238,7 @@ def render_image(render_fn, rays, rng, chunk=8192):
   num_rays = height * width
   rays = utils.namedtuple_map(lambda r: r.reshape((num_rays, -1)), rays)
 
-  host_id = jax.host_id()
+  process_index = jax.process_index()
   results = []
   for i in range(0, num_rays, chunk):
     # pylint: disable=cell-var-from-loop
@@ -252,9 +252,9 @@ def render_image(render_fn, rays, rng, chunk=8192):
     else:
       padding = 0
     # After padding the number of chunk_rays is always divisible by
-    # host_count.
-    rays_per_host = chunk_rays[0].shape[0] // jax.host_count()
-    start, stop = host_id * rays_per_host, (host_id + 1) * rays_per_host
+    # process_count.
+    rays_per_host = chunk_rays[0].shape[0] // jax.process_count()
+    start, stop = process_index * rays_per_host, (process_index + 1) * rays_per_host
     chunk_rays = utils.namedtuple_map(lambda r: utils.shard(r[start:stop]),
                                       chunk_rays)
     chunk_results = render_fn(rng, chunk_rays)[-1]
