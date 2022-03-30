@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "sudo add-apt-repository ppa:alessandro-strada/ppa"
+echo "sudo add-apt-repository ppa:alessandro-strada/ppa (add google-drive-ocamlfuse repository)"
 echo -n "Execute?"; read
 sudo add-apt-repository ppa:alessandro-strada/ppa
 
@@ -22,7 +22,9 @@ python3 -c "import jax; print(jax.device_count()); print(jax.numpy.add(1, 1))"
 
 echo "Mount Google Drive folder. Click on link and authenticate to provide Google Drive access."
 echo -n "Execute?"; read
-mkdir ~/gdfuse-mount
-env PATH=`pwd`:$PATH google-drive-ocamlfuse -config gdfuse-config -browser show-gauth-link ~/gdfuse-mount
+mkdir -p ~/gdfuse-mount
+export PATH="$PATH:$(pwd)/$(dirname $0)" # Add scripts folder to PATH so google-drive-ocamlfuse uses show-gauth-link script
+google-drive-ocamlfuse -config $(dirname $0)/gdfuse-config -browser show-gauth-link ~/gdfuse-mount
 
-echo "Google Drive folder is now available on ~/gdfuse-mount"
+echo "Google Drive folder should be available now on ~/gdfuse-mount"
+echo "Please check with ls ~/gdfuse-mount"
