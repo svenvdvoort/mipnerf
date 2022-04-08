@@ -12,7 +12,7 @@ import rawpy
 
 tf.config.experimental_run_functions_eagerly(True)
 tf.enable_eager_execution()
-tf.set_random_seed(42)
+tf.set_random_seed(4200)
 
 
 def read_jpg(filename):
@@ -27,8 +27,8 @@ def read_jpg(filename):
   return tf.cast(image, tf.float32) / white_level
 
 
-images = glob.glob('D:/ComputerScience/DL/NERF/mipnerf/lego_small/lego/*/*')
-new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/'
+# images = glob.glob('D:/ComputerScience/DL/NERF/mipnerf/lego_small/lego/*/*')
+# new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/'
 
 #to unprocess the rgb images to raw
 # for path in images:
@@ -51,6 +51,8 @@ new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/'
   #   np.save(f, np.array(im))
 
 
+images = glob.glob('D:/ComputerScience/DL/raw_im/*')
+new_dir = 'D:/ComputerScience/DL/rgb_im/'
 
 #to process the raw images to rgb again
 rgb2cam = random_ccm()
@@ -60,12 +62,22 @@ rgb_gain, red_gain, blue_gain = random_gains()
 
 for path in images:
   im = np.load(path)
-  processed_im = process(im, red_gain, blue_gain, cam2rgb)
-  new_path = new_dir + path.split('/')[6]
-  cv2.imwrite(new_path, processed_im)
+  im = tf.convert_to_tensor(np.array([im]))
+  im = tf.cast(im, tf.float32) #/ white_level
+  processed_im = np.array(process(im, red_gain, blue_gain, cam2rgb))
+  new_path = new_dir + path.split('\\')[1].split('.')[0] + '.png'
+  cv2.imwrite(new_path, 255* processed_im[0,:,:,:])
 
 
-#to process the images
+# im = tf.convert_to_tensor(np.array([np.load('D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/lego/test/r_0.png')]))
+# im = tf.cast(im, tf.float32)#/ white_level
+# processed_im = np.array(process(im, red_gain, blue_gain, cam2rgb))
+# cv2.imwrite("test.png", 255 * processed_im[0,:,:,:])
+# cv2.imshow('yep', processed_im[0,:,:,:])
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+
+# to process the images
 # im = process(im, meta['red_gain'], meta['blue_gain'], meta['cam2rgb'])
 # # image =
 # plt.imshow(im)
@@ -75,7 +87,5 @@ for path in images:
 #
 # # img = cv2.cvtColor(img, cv2.COLOR_BayerBGGR2RGB)
 # cv2.demosaicing(img)
-# cv2.imshow('yep', img)
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+
 

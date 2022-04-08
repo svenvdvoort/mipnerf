@@ -31,7 +31,7 @@ def apply_gains(bayer_images, red_gains, blue_gains):
   bayer_images.shape.assert_is_compatible_with((None, None, None, 4))
   green_gains = tf.ones_like(red_gains)
   gains = tf.stack([red_gains, green_gains, green_gains, blue_gains], axis=-1)
-  gains = gains[:, tf.newaxis, tf.newaxis, :]
+  # gains = gains[:, tf.newaxis, tf.newaxis, :]
   return bayer_images * gains
 
 
@@ -84,7 +84,7 @@ def apply_ccms(images, ccms):
   """Applies color correction matrices."""
   images.shape.assert_has_rank(4)
   images = images[:, :, :, tf.newaxis, :]
-  ccms = ccms[:, tf.newaxis, tf.newaxis, :, :]
+  ccms = ccms[tf.newaxis, tf.newaxis, tf.newaxis, :, :]
   return tf.reduce_sum(images * ccms, axis=-1)
 
 
