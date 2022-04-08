@@ -1,4 +1,6 @@
 from unprocess import unprocess
+from unprocess import random_ccm
+from unprocess import random_gains
 from process import process
 import tensorflow as tf
 import cv2
@@ -10,6 +12,8 @@ import rawpy
 
 tf.config.experimental_run_functions_eagerly(True)
 tf.enable_eager_execution()
+tf.set_random_seed(42)
+
 
 def read_jpg(filename):
   """Reads an 8-bit JPG file from disk and normalizes to [0, 1]."""
@@ -22,19 +26,21 @@ def read_jpg(filename):
   #   print(f)
   return tf.cast(image, tf.float32) / white_level
 
+
 images = glob.glob('D:/ComputerScience/DL/NERF/mipnerf/lego_small/lego/*/*')
 new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/'
 
+#to unprocess the rgb images to raw
+# for path in images:
+#   im = read_jpg(path)
+#   im, meta = unprocess(im)
+#   new_path = new_dir + path.split('/')[6]
+#   # rawpy.imread(new)
+#   with open(new_path, 'wb') as f:
+#     np.save(f, np.array(im))
+#   # cv2.imwrite(new_path, np.array(im))
 
-for path in images:
-  im = read_jpg(path)
-  im, meta = unprocess(im)
-  new_path = new_dir + path.split('/')[6]
-  # rawpy.imread(new)
-  with open(new_path, 'wb') as f:
-    np.save(f, np.array(im))
-  # cv2.imwrite(new_path, np.array(im))
-
+#to resize the images
 # for path in images:
 #   im = cv2.imread(path)
 #   im = cv2.resize(im, (50,50))
@@ -46,6 +52,20 @@ for path in images:
 
 
 
+#to process the raw images to rgb again
+rgb2cam = random_ccm()
+cam2rgb = tf.matrix_inverse(rgb2cam)
+
+rgb_gain, red_gain, blue_gain = random_gains()
+
+for path in images:
+  im = np.load(path)
+  processed_im = process(im, red_gain, blue_gain, cam2rgb)
+  new_path = new_dir + path.split('/')[6]
+  cv2.imwrite(new_path, processed_im)
+
+
+#to process the images
 # im = process(im, meta['red_gain'], meta['blue_gain'], meta['cam2rgb'])
 # # image =
 # plt.imshow(im)
