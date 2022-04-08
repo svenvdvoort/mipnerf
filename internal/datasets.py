@@ -64,6 +64,7 @@ class Dataset(threading.Thread):
     self.data_dir = data_dir
     self.near = config.near
     self.far = config.far
+    self.num_rgb_channels = 4 if config.raw_format else 3
     if split == 'train':
       self._train_init(config)
     elif split == 'test':
@@ -123,11 +124,11 @@ class Dataset(threading.Thread):
 
     if config.batching == 'all_images':
       # flatten the ray and image dimension together.
-      self.images = self.images.reshape([-1, 3])
+      self.images = self.images.reshape([-1, self.num_rgb_channels])
       self.rays = utils.namedtuple_map(lambda r: r.reshape([-1, r.shape[-1]]),
                                        self.rays)
     elif config.batching == 'single_image':
-      self.images = self.images.reshape([-1, self.resolution, 3])
+      self.images = self.images.reshape([-1, self.resolution, self.num_rgb_channels])
       self.rays = utils.namedtuple_map(
           lambda r: r.reshape([-1, self.resolution, r.shape[-1]]), self.rays)
     else:
@@ -325,7 +326,10 @@ class Blender(Dataset):
       frame = meta['frames'][i]
       fname = os.path.join(self.data_dir, frame['file_path'] + '.png')
       with utils.open_file(fname, 'rb') as imgin:
-        image = np.array(Image.open(imgin), dtype=np.float32) / 255.
+        if config.raw_format:
+          image = np.load(imgin)
+        else:
+          image = np.array(Image.open(imgin), dtype=np.float32) / 255.
         if config.factor == 2:
           [halfres_h, halfres_w] = [hw // 2 for hw in image.shape[:2]]
           image = cv2.resize(
@@ -338,10 +342,8 @@ class Blender(Dataset):
     self.images = np.stack(images, axis=0)
     if config.white_bkgd:
       self.images = (
-          self.images[..., :3] * self.images[..., -1:] +
+          self.images * self.images[..., -1:] +
           (1. - self.images[..., -1:]))
-    else:
-      self.images = self.images[..., :3]
     self.h, self.w = self.images.shape[1:3]
     self.resolution = self.h * self.w
     self.camtoworlds = np.stack(cams, axis=0)
