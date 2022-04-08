@@ -86,6 +86,7 @@ class Config:
   coarse_loss_mult: float = 0.1  # How much to downweight the coarse loss(es).
   weight_decay_mult: float = 0.  # The multiplier on weight decay.
   white_bkgd: bool = True  # If True, use white as the background (black o.w.).
+  raw_format: bool = False # Whether input and output should be raw format
 
 
 def define_common_flags():
@@ -104,7 +105,8 @@ def define_common_flags():
 
 def load_config():
   gin.parse_config_files_and_bindings(flags.FLAGS.gin_file,
-                                      flags.FLAGS.gin_param)
+                                      flags.FLAGS.gin_param,
+                                      finalize_config=False)
   return Config()
 
 
@@ -159,8 +161,17 @@ def save_img_uint8(img, pth):
         (np.clip(np.nan_to_num(img), 0., 1.) * 255.).astype(jnp.uint8)).save(
             f, 'PNG')
 
+def save_raw_uint8(img, pth):
+  """Save raw image to disk as NumPy array."""
+  with open_file(pth+".npy", 'wb') as f:
+    np.save(f, (np.clip(np.nan_to_num(img), 0., 1.) * 255.).astype(jnp.uint8))
 
 def save_img_float32(depthmap, pth):
   """Save an image (probably a depthmap) to disk as a float32 TIFF."""
   with open_file(pth, 'wb') as f:
     Image.fromarray(np.nan_to_num(depthmap).astype(np.float32)).save(f, 'TIFF')
+
+def save_raw_float32(depthmap, pth):
+  """Save raw depthmap image to disk as float32 numpy array."""
+  with open_file(pth+".npy", 'wb') as f:
+    np.save(f, np.nan_to_num(depthmap).astype(np.float32))

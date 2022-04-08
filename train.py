@@ -23,6 +23,7 @@ from absl import flags
 import flax
 from flax.metrics import tensorboard
 from flax.training import checkpoints
+import gin
 import jax
 from jax import random
 import jax.numpy as jnp
@@ -85,7 +86,7 @@ def train_step(model, config, rng, state, batch, lr):
     losses = []
     for (rgb, _, _) in ret:
       losses.append(
-          (mask * (rgb - batch['pixels'][..., :3])**2).sum() / mask.sum())
+          (mask * (rgb - batch['pixels'])**2).sum() / mask.sum())
     losses = jnp.array(losses)
 
     loss = (
@@ -151,6 +152,11 @@ def main(unused_argv):
   np.random.seed(20201473 + jax.process_index())
 
   config = utils.load_config()
+  if config.raw_format:
+    print("Configuring MipNeRF for raw processing")
+    gin.bind_parameter("MLP.num_rgb_channels", 4)
+    gin.bind_parameter("MipNerfModel.rgb_activation", jnp.exp)
+  gin.finalize()
 
   if config.batch_size % jax.device_count() != 0:
     raise ValueError('Batch size must be divisible by the number of devices.')

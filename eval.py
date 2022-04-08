@@ -22,7 +22,9 @@ from absl import flags
 import flax
 from flax.metrics import tensorboard
 from flax.training import checkpoints
+import gin
 import jax
+import jax.numpy as jnp
 from jax import random
 import numpy as np
 
@@ -44,6 +46,11 @@ flags.DEFINE_bool('save_output', True,
 
 def main(unused_argv):
   config = utils.load_config()
+  if config.raw_format:
+    print("Configuring MipNeRF for raw processing")
+    gin.bind_parameter("MLP.num_rgb_channels", 4)
+    gin.bind_parameter("MipNerfModel.rgb_activation", jnp.exp)
+  gin.finalize()
 
   dataset = datasets.get_dataset('test', FLAGS.data_dir, config)
   model, init_variables = models.construct_mipnerf(
@@ -120,16 +127,28 @@ def main(unused_argv):
         ssim_values.append(ssim)
       if FLAGS.save_output and (config.test_render_interval > 0):
         if (idx % config.test_render_interval) == 0:
-          utils.save_img_uint8(
-              pred_color, path.join(out_dir, 'color_{:03d}.png'.format(idx)))
-          utils.save_img_float32(
-              pred_distance,
-              path.join(out_dir, 'distance_{:03d}.tiff'.format(idx)))
-          utils.save_img_float32(
-              pred_acc, path.join(out_dir, 'acc_{:03d}.tiff'.format(idx)))
-          for k, v in vis_suite.items():
+          if config.raw_format:
+            utils.save_raw_uint8(
+                pred_color, path.join(out_dir, 'color_{:03d}.png'.format(idx)))
+            utils.save_raw_float32(
+                pred_distance,
+                path.join(out_dir, 'distance_{:03d}.tiff'.format(idx)))
+            utils.save_raw_float32(
+                pred_acc, path.join(out_dir, 'acc_{:03d}.tiff'.format(idx)))
+            for k, v in vis_suite.items():
+              utils.save_raw_uint8(
+                  v, path.join(out_dir, k + '_{:03d}.png'.format(idx)))
+          else:
             utils.save_img_uint8(
-                v, path.join(out_dir, k + '_{:03d}.png'.format(idx)))
+                pred_color, path.join(out_dir, 'color_{:03d}.png'.format(idx)))
+            utils.save_img_float32(
+                pred_distance,
+                path.join(out_dir, 'distance_{:03d}.tiff'.format(idx)))
+            utils.save_img_float32(
+                pred_acc, path.join(out_dir, 'acc_{:03d}.tiff'.format(idx)))
+            for k, v in vis_suite.items():
+              utils.save_img_uint8(
+                  v, path.join(out_dir, k + '_{:03d}.png'.format(idx)))
     if (not FLAGS.eval_once) and (jax.process_index() == 0):
       summary_writer.image('pred_color', showcase_color, step)
       summary_writer.image('pred_acc', showcase_acc, step)
