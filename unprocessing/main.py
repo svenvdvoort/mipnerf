@@ -27,46 +27,50 @@ def read_jpg(filename):
   return tf.cast(image, tf.float32) / white_level
 
 
-# images = glob.glob('D:/ComputerScience/DL/NERF/mipnerf/lego_small/lego/*/*')
-# new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/'
+images = glob.glob('D:/ComputerScience/DL/NERF/mipnerf/lego_200x200/lego/*/*')
+new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_200x200_raw/'
 
-#to unprocess the rgb images to raw
-# for path in images:
-#   im = read_jpg(path)
-#   im, meta = unprocess(im)
-#   new_path = new_dir + path.split('/')[6]
-#   # rawpy.imread(new)
-#   with open(new_path, 'wb') as f:
-#     np.save(f, np.array(im))
-#   # cv2.imwrite(new_path, np.array(im))
+# to unprocess the rgb images to raw
+for path in images:
+  im = read_jpg(path)
+  im, meta = unprocess(im)
+  new_path = new_dir + path.split('/')[6]
+  # rawpy.imread(new)
+  with open(new_path, 'wb') as f:
+    np.save(f, np.array(im))
+  # cv2.imwrite(new_path, np.array(im))
 
-#to resize the images
+
+# images = glob.glob('D:/ComputerScience/DL/NERF/mipnerf/nerf_synthetic/lego/*/*')
+# new_dir = 'D:/ComputerScience/DL/NERF/mipnerf/lego_200x200/'
+# # to resize the images
 # for path in images:
 #   im = cv2.imread(path)
-#   im = cv2.resize(im, (50,50))
+#   im = cv2.resize(im, (200,200))
 #   new_path = new_dir + path.split('/')[6]
 #   cv2.imwrite(new_path, im)
-#   # rawpy.imread(new)
-  # with open(new_path, 'wb') as f:
-  #   np.save(f, np.array(im))
 
 
-images = glob.glob('D:/ComputerScience/DL/raw_im/*')
-new_dir = 'D:/ComputerScience/DL/rgb_im/'
 
-#to process the raw images to rgb again
-rgb2cam = random_ccm()
-cam2rgb = tf.matrix_inverse(rgb2cam)
-
-rgb_gain, red_gain, blue_gain = random_gains()
-
-for path in images:
-  im = np.load(path)
-  im = tf.convert_to_tensor(np.array([im]))
-  im = tf.cast(im, tf.float32) #/ white_level
-  processed_im = np.array(process(im, red_gain, blue_gain, cam2rgb))
-  new_path = new_dir + path.split('\\')[1].split('.')[0] + '.png'
-  cv2.imwrite(new_path, 255* processed_im[0,:,:,:])
+# images = glob.glob('D:/ComputerScience/DL/raw_im/test_preds/*')
+# new_dir = 'D:/ComputerScience/DL/rgb_im/'
+#
+# #to process the raw images to rgb again
+# rgb2cam = random_ccm()
+# cam2rgb = tf.matrix_inverse(rgb2cam)
+#
+# rgb_gain, red_gain, blue_gain = random_gains()
+#
+# for path in images:
+#   im = np.load(path)
+#   im = tf.convert_to_tensor(np.array([im]))
+#   im = tf.cast(im, tf.float32) / 255.0
+#   processed_im = np.array(process(im, red_gain, blue_gain, cam2rgb))
+#   new_path = new_dir + path.split('\\')[1].split('.')[0] + '.png'
+#   # processed_im_rgb = 255 * cv2.cvtColor(processed_im[0,:,:,:], cv2.COLOR_GRB)
+#   processed_im_rgb = 255 * processed_im[0,:,:,:][:,:, [1,0,2]]
+#   im_norm = cv2.normalize(processed_im_rgb,None, 0, 255,cv2.NORM_MINMAX)
+#   cv2.imwrite(new_path, im_norm)
 
 
 # im = tf.convert_to_tensor(np.array([np.load('D:/ComputerScience/DL/NERF/mipnerf/lego_small_raw/lego/test/r_0.png')]))
