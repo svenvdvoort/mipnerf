@@ -18,12 +18,12 @@ def printg(message):
 printg(f"Creating temporary working directory {tmp_working_dir}")
 os.system(f"mkdir -p {tmp_working_dir}")
 
-psnr_file = open("psnr_scores.txt", "a")
+psnr_file = open("psnr_scores.csv", "a")
 psnr_file.write("checkpoint, psnr_score_average, psnr_score_variance\n")
-ssim_file = open("ssim_scores.txt", "a")
+ssim_file = open("ssim_scores.csv", "a")
 ssim_file.write("checkpoint, ssim_score_average, ssim_score_variance\n")
 
-for i in range(10000, 500000, 10000):
+for i in range(10000, 510000, 10000):
     try:
         printg(f"Running eval on checkpoint_{i}")
         os.system(f"cp {results_dir}/checkpoint_{i} {tmp_working_dir}/")
