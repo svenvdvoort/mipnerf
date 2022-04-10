@@ -36,11 +36,13 @@ for i in range(10000, 500000, 10000):
             psnr_score_average = np.average(psnr_scores)
             psnr_score_variance = np.var(psnr_scores)
             psnr_file.write(f"{i}, {psnr_score_average}, {psnr_score_variance}\n")
+            psnr_file.flush()
         with open(f"{tmp_working_dir}/test_preds/ssims_{i}.txt", "r") as f:
             ssim_scores = list(map(float, f.read().split(" ")))
             ssim_score_average = np.average(ssim_scores)
             ssim_score_variance = np.var(ssim_scores)
             ssim_file.write(f"{i}, {ssim_score_average}, {ssim_score_variance}\n")
+            ssim_file.flush()
 
         printg(f"Eval on checkpoint_{i} is done. Average psnr score: {psnr_score_average} (variance: {psnr_score_variance}), average ssim score: {ssim_score_average} (variance: {ssim_score_variance}).")
         os.system(f"rm {tmp_working_dir}/checkpoint_{i}")
