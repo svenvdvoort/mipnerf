@@ -19,9 +19,9 @@ printg(f"Creating temporary working directory {tmp_working_dir}")
 os.system(f"mkdir -p {tmp_working_dir}")
 
 psnr_file = open("psnr_scores.txt", "a")
-psnr_file.write("checkpoint, psnr_score\n")
+psnr_file.write("checkpoint, psnr_score_average, psnr_score_variance\n")
 ssim_file = open("ssim_scores.txt", "a")
-ssim_file.write("checkpoint, ssim_score\n")
+ssim_file.write("checkpoint, ssim_score_average, ssim_score_variance\n")
 
 for i in range(10000, 500000, 10000):
     try:
@@ -32,13 +32,17 @@ for i in range(10000, 500000, 10000):
         eval_output.check_returncode()
 
         with open(f"{tmp_working_dir}/test_preds/psnrs_{i}.txt", "r") as f:
-            avg_psnr_score = np.average(list(map(float, f.read().split(" "))))
-            psnr_file.write(f"{i}, {avg_psnr_score}\n")
+            psnr_scores = list(map(float, f.read().split(" ")))
+            psnr_score_average = np.average(psnr_scores)
+            psnr_score_variance = np.var(psnr_scores)
+            psnr_file.write(f"{i}, {psnr_score_average}, {psnr_score_variance}\n")
         with open(f"{tmp_working_dir}/test_preds/ssims_{i}.txt", "r") as f:
-            avg_ssim_score = np.average(list(map(float, f.read().split(" "))))
-            ssim_file.write(f"{i}, {avg_ssim_score}\n")
+            ssim_scores = list(map(float, f.read().split(" ")))
+            ssim_score_average = np.average(ssim_scores)
+            ssim_score_variance = np.var(ssim_scores)
+            ssim_file.write(f"{i}, {ssim_score_average}, {ssim_score_variance}\n")
 
-        printg(f"Eval on checkpoint_{i} is done. Average psnr score: {avg_psnr_score}, average ssim score: {avg_ssim_score}.")
+        printg(f"Eval on checkpoint_{i} is done. Average psnr score: {psnr_score_average} (variance: {psnr_score_variance}), average ssim score: {ssim_score_average} (variance: {ssim_score_variance}).")
         os.system(f"rm {tmp_working_dir}/checkpoint_{i}")
     except Exception as e:
         printg(f"Failed to eval checkpoint {i}, error: {e}")
